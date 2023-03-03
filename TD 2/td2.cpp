@@ -238,22 +238,22 @@ ListeFilms::~ListeFilms()
 }
 //]
 
-void afficherActeur(const Acteur& acteur)
-{
-	cout << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
+ostream& operator<< (ostream& o, const Acteur& acteur) {
+	return o << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
 }
+
 
 //TODO: Une fonction pour afficher un film avec tous ces acteurs (en utilisant la fonction afficherActeur ci-dessus).
 //[
-void afficherFilm(const Film& film)
-{
-	cout << "Titre: " << film.titre << endl;
-	cout << "  Réalisateur: " << film.realisateur << "  Année :" << film.anneeSortie << endl;
-	cout << "  Recette: " << film.recette << "M$" << endl;
+ostream& operator<< (ostream& o, const Film& film) {
+	o << "Titre: " << film.titre << endl;
+	o << "  Réalisateur: " << film.realisateur << "  Année :" << film.anneeSortie << endl;
+	o << "  Recette: " << film.recette << "M$" << endl;
+	o << "Acteurs:" << endl;
 
-	cout << "Acteurs:" << endl;
 	for (const shared_ptr<Acteur>& acteur : spanListeActeurs(film.acteurs))
-		afficherActeur(*acteur);
+		cout << *acteur;
+	return o;
 }
 //]
 
@@ -277,7 +277,7 @@ void afficherListeFilms(const ListeFilms& listeFilms)
 		//]
 		//TODO: Afficher le film.
 		//[
-		afficherFilm(*film);
+		cout << *film;
 		//]
 		cout << ligneDeSeparation;
 	}
@@ -317,7 +317,7 @@ int main()
 	cout << ligneDeSeparation << "Le premier film de la liste est:" << endl;
 	//TODO: Afficher le premier film de la liste.  Devrait être Alien.
 	//[
-	afficherFilm(*listeFilms.enSpan()[0]);
+	cout << *listeFilms.enSpan()[0];
 	//]
 
 	cout << ligneDeSeparation << "Les films sont:" << endl;
