@@ -32,12 +32,13 @@ private:
 
 struct ListeActeurs {
 	int capacite = 0, nElements = 0;
-	ListeActeurs() = default ;
+	ListeActeurs() = default;
 	ListeActeurs(int cap, int nElem) {
 		capacite = cap;
 		nElements = nElem;
 		elements = make_unique<shared_ptr<Acteur>[]>(capacite);
 	};
+
 	//Acteur** elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
 	unique_ptr<shared_ptr<Acteur>[]> elements;
 };
@@ -47,6 +48,17 @@ struct Film
 	std::string titre = "", realisateur = ""; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
 	int anneeSortie = 0, recette = 0; // Année de sortie et recette globale du film en millions de dollars
 	ListeActeurs acteurs;
+	Film() = default;
+	Film(const Film& autre) {
+		titre = autre.titre;
+		realisateur = autre.realisateur;
+		anneeSortie = autre.anneeSortie;
+		recette = autre.recette;
+		acteurs = ListeActeurs(autre.acteurs.capacite, autre.acteurs.nElements);
+		for (int i = 0; i < autre.acteurs.nElements; i++)
+			acteurs.elements[i] = autre.acteurs.elements[i];
+
+	}
 };
 
 struct Acteur
