@@ -4,6 +4,8 @@
 #include <string>
 #include <cassert>
 #include "gsl/span"
+#include <memory>
+using namespace std;
 using gsl::span;
 
 struct Film; struct Acteur; // Permet d'utiliser les types alors qu'ils seront défini après.
@@ -29,8 +31,15 @@ private:
 };
 
 struct ListeActeurs {
-	int capacite, nElements;
-	Acteur** elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
+	int capacite = 0, nElements = 0;
+	ListeActeurs() = default ;
+	ListeActeurs(int cap, int nElem) {
+		capacite = cap;
+		nElements = nElem;
+		elements = make_unique<Acteur* []>(capacite);
+	};
+	//Acteur** elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
+	unique_ptr<Acteur*[]> elements;
 };
 
 struct Film

@@ -47,7 +47,7 @@ string lireString(istream& fichier)
 }
 
 #pragma endregion//}
-//help
+
 //TODO: Une fonction pour ajouter un Film à une ListeFilms, le film existant déjà; on veut uniquement ajouter le pointeur vers le film existant.  Cette fonction doit doubler la taille du tableau alloué, avec au minimum un élément, dans le cas où la capacité est insuffisante pour ajouter l'élément.  Il faut alors allouer un nouveau tableau plus grand, copier ce qu'il y avait dans l'ancien, et éliminer l'ancien trop petit.  Cette fonction ne doit copier aucun Film ni Acteur, elle doit copier uniquement des pointeurs.
 //[
 void ListeFilms::changeDimension(int nouvelleCapacite)
@@ -95,7 +95,7 @@ void ListeFilms::enleverFilm(const Film* film)
 //TODO: Une fonction pour trouver un Acteur par son nom dans une ListeFilms, qui retourne un pointeur vers l'acteur, ou nullptr si l'acteur n'est pas trouvé.  Devrait utiliser span.
 //[
 // Voir la NOTE ci-dessous pourquoi Acteur* n'est pas const.  Noter que c'est valide puisque c'est la struct uniquement qui est const dans le paramètre, et non ce qui est pointé par la struct.
-span<Acteur*> spanListeActeurs(const ListeActeurs& liste) { return span(liste.elements, liste.nElements); }
+span<Acteur*> spanListeActeurs(const ListeActeurs& liste) { return span(liste.elements.get(), liste.nElements); }
 
 //NOTE: Doit retourner un Acteur modifiable, sinon on ne peut pas l'utiliser pour modifier l'acteur tel que demandé dans le main, et on ne veut pas faire écrire deux versions.
 Acteur* ListeFilms::trouverActeur(const string& nomActeur) const
@@ -135,22 +135,22 @@ Film* lireFilm(istream& fichier//[
 , ListeFilms& listeFilms//]
 )
 {
-	Film film = {};
-	film.titre       = lireString(fichier);
-	film.realisateur = lireString(fichier);
-	film.anneeSortie = lireUint16 (fichier);
-	film.recette     = lireUint16 (fichier);
-	film.acteurs.nElements = lireUint8 (fichier);  //NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
+	Film* film = new Film;
+	film->titre       = lireString(fichier);
+	film->realisateur = lireString(fichier);
+	film->anneeSortie = lireUint16 (fichier);
+	film->recette     = lireUint16 (fichier);
+	int nElements = lireUint8 (fichier);  //NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
 	//[
-	Film* filmp = new Film(film); //NOTE: On aurait normalement fait le "new" au début de la fonction pour directement mettre les informations au bon endroit; on le fait ici pour que le code ci-dessus puisse être directement donné aux étudiants sans qu'ils aient le "new" déjà écrit.
-	cout << "Création Film " << film.titre << endl;
-	filmp->acteurs.elements = new Acteur*[filmp->acteurs.nElements];
+	//Film* filmp = new Film(film); //NOTE: On aurait normalement fait le "new" au début de la fonction pour directement mettre les informations au bon endroit; on le fait ici pour que le code ci-dessus puisse être directement donné aux étudiants sans qu'ils aient le "new" déjà écrit.
+	cout << "Création Film " << film->titre << endl;
+	film->acteurs = ListeActeurs(nElements, nElements) ;
 	/*
 	//]
 	for (int i = 0; i < film.acteurs.nElements; i++) {
 		//[
 	*/
-	for (Acteur*& acteur : spanListeActeurs(filmp->acteurs)) {
+	for (Acteur*& acteur : spanListeActeurs(film->acteurs)) {
 		acteur = 
 		//]
 		lireActeur(fichier//[
@@ -158,11 +158,11 @@ Film* lireFilm(istream& fichier//[
 		); //TODO: Placer l'acteur au bon endroit dans les acteurs du film.
 		//TODO: Ajouter le film à la liste des films dans lesquels l'acteur joue.
 	//[
-		acteur->joueDans.ajouterFilm(filmp);
+		acteur->joueDans.ajouterFilm(film);
 	//]
 	}
 	//[
-	return filmp;
+	return film;
 	//]
 	return {}; //TODO: Retourner le pointeur vers le nouveau film.
 }
@@ -221,7 +221,7 @@ void detruireFilm(Film* film)
 			detruireActeur(acteur);
 	}
 	cout << "Destruction Film " << film->titre << endl;
-	delete[] film->acteurs.elements;
+	//delete[] film->acteurs.elements;
 	delete film;
 }
 //]
