@@ -95,13 +95,13 @@ void ListeFilms::enleverFilm(const Film* film)
 //TODO: Une fonction pour trouver un Acteur par son nom dans une ListeFilms, qui retourne un pointeur vers l'acteur, ou nullptr si l'acteur n'est pas trouvé.  Devrait utiliser span.
 //[
 // Voir la NOTE ci-dessous pourquoi Acteur* n'est pas const.  Noter que c'est valide puisque c'est la struct uniquement qui est const dans le paramètre, et non ce qui est pointé par la struct.
-span<Acteur*> spanListeActeurs(const ListeActeurs& liste) { return span(liste.elements.get(), liste.nElements); }
+span<shared_ptr<Acteur>> spanListeActeurs(const ListeActeurs& liste) { return span(liste.elements.get(), liste.nElements); }
 
 //NOTE: Doit retourner un Acteur modifiable, sinon on ne peut pas l'utiliser pour modifier l'acteur tel que demandé dans le main, et on ne veut pas faire écrire deux versions.
-Acteur* ListeFilms::trouverActeur(const string& nomActeur) const
+shared_ptr<Acteur> ListeFilms::trouverActeur(const string& nomActeur) const
 {
 	for (const Film* film : enSpan()) {
-		for (Acteur* acteur : spanListeActeurs(film->acteurs)) {
+		for (const shared_ptr<Acteur>& acteur : spanListeActeurs(film->acteurs)) {
 			if (acteur->nom == nomActeur)
 				return acteur;
 		}
@@ -111,7 +111,7 @@ Acteur* ListeFilms::trouverActeur(const string& nomActeur) const
 //]
 
 //TODO: Compléter les fonctions pour lire le fichier et créer/allouer une ListeFilms.  La ListeFilms devra être passée entre les fonctions, pour vérifier l'existence d'un Acteur avant de l'allouer à nouveau (cherché par nom en utilisant la fonction ci-dessus).
-Acteur* lireActeur(istream& fichier//[
+shared_ptr<Acteur> lireActeur(istream& fichier//[
 , ListeFilms& listeFilms//]
 )
 {
@@ -120,12 +120,12 @@ Acteur* lireActeur(istream& fichier//[
 	acteur.anneeNaissance = lireUint16 (fichier);
 	acteur.sexe           = lireUint8  (fichier);
 	//[
-	Acteur* acteurExistant = listeFilms.trouverActeur(acteur.nom);
+	shared_ptr<Acteur> acteurExistant = listeFilms.trouverActeur(acteur.nom);
 	if (acteurExistant != nullptr)
 		return acteurExistant;
 	else {
 		cout << "Création Acteur " << acteur.nom << endl;
-		return new Acteur(acteur);
+		return make_shared<Acteur>(acteur);
 	}
 	//]
 	return {}; //TODO: Retourner un pointeur soit vers un acteur existant ou un nouvel acteur ayant les bonnes informations, selon si l'acteur existait déjà.  Pour fins de débogage, affichez les noms des acteurs crées; vous ne devriez pas voir le même nom d'acteur affiché deux fois pour la création.
@@ -150,7 +150,7 @@ Film* lireFilm(istream& fichier//[
 	for (int i = 0; i < film.acteurs.nElements; i++) {
 		//[
 	*/
-	for (Acteur*& acteur : spanListeActeurs(film->acteurs)) {
+	for (shared_ptr<Acteur>& acteur : spanListeActeurs(film->acteurs)) {
 		acteur = 
 		//]
 		lireActeur(fichier//[
@@ -158,7 +158,7 @@ Film* lireFilm(istream& fichier//[
 		); //TODO: Placer l'acteur au bon endroit dans les acteurs du film.
 		//TODO: Ajouter le film à la liste des films dans lesquels l'acteur joue.
 	//[
-		acteur->joueDans.ajouterFilm(film);
+		//acteur->joueDans.ajouterFilm(film);
 	//]
 	}
 	//[
@@ -204,22 +204,22 @@ ListeFilms::ListeFilms(const string& nomFichier) : possedeLesFilms_(true)
 
 //TODO: Une fonction pour détruire un film (relâcher toute la mémoire associée à ce film, et les acteurs qui ne jouent plus dans aucun films de la collection).  Noter qu'il faut enleve le film détruit des films dans lesquels jouent les acteurs.  Pour fins de débogage, affichez les noms des acteurs lors de leur destruction.
 //[
-void detruireActeur(Acteur* acteur)
-{
-	cout << "Destruction Acteur " << acteur->nom << endl;
-	delete acteur;
-}
-bool joueEncore(const Acteur* acteur)
-{
-	return acteur->joueDans.size() != 0;
-}
+//void detruireActeur(Acteur* acteur)
+//{
+//	cout << "Destruction Acteur " << acteur->nom << endl;
+//	delete acteur;
+//}
+//bool joueEncore(const Acteur* acteur)
+//{
+//	return acteur->joueDans.size() != 0;
+//}
 void detruireFilm(Film* film)
 {
-	for (Acteur* acteur : spanListeActeurs(film->acteurs)) {
-		acteur->joueDans.enleverFilm(film);
-		if (!joueEncore(acteur))
-			detruireActeur(acteur);
-	}
+	//for (shared_ptr<Acteur> acteur : spanListeActeurs(film->acteurs)) {
+	//	acteur->joueDans.enleverFilm(film);
+	//	if (!joueEncore(acteur))
+	//		detruireActeur(acteur);
+	//}
 	cout << "Destruction Film " << film->titre << endl;
 	//delete[] film->acteurs.elements;
 	delete film;
@@ -252,7 +252,7 @@ void afficherFilm(const Film& film)
 	cout << "  Recette: " << film.recette << "M$" << endl;
 
 	cout << "Acteurs:" << endl;
-	for (const Acteur* acteur : spanListeActeurs(film.acteurs))
+	for (const shared_ptr<Acteur>& acteur : spanListeActeurs(film.acteurs))
 		afficherActeur(*acteur);
 }
 //]
@@ -283,20 +283,20 @@ void afficherListeFilms(const ListeFilms& listeFilms)
 	}
 }
 
-void afficherFilmographieActeur(const ListeFilms& listeFilms, const string& nomActeur)
-{
-	//TODO: Utiliser votre fonction pour trouver l'acteur (au lieu de le mettre à nullptr).
-	const Acteur* acteur = //[
-		listeFilms.trouverActeur(nomActeur);
-		/* //]
-		nullptr;
-	//[ */
-	//]
-	if (acteur == nullptr)
-		cout << "Aucun acteur de ce nom" << endl;
-	else
-		afficherListeFilms(acteur->joueDans);
-}
+//void afficherFilmographieActeur(const ListeFilms& listeFilms, const string& nomActeur)
+//{
+//	//TODO: Utiliser votre fonction pour trouver l'acteur (au lieu de le mettre à nullptr).
+//	const Acteur* acteur = //[
+//		listeFilms.trouverActeur(nomActeur);
+//		/* //]
+//		nullptr;
+//	//[ */
+//	//]
+//	if (acteur == nullptr)
+//		cout << "Aucun acteur de ce nom" << endl;
+//	else
+//		afficherListeFilms(acteur->joueDans);
+//}
 
 int main()
 {
@@ -335,7 +335,7 @@ int main()
 	cout << ligneDeSeparation << "Liste des films où Benedict Cumberbatch joue sont:" << endl;
 	//TODO: Afficher la liste des films où Benedict Cumberbatch joue.  Il devrait y avoir Le Hobbit et Le jeu de l'imitation.
 	//[
-	afficherFilmographieActeur(listeFilms, "Benedict Cumberbatch");
+	//afficherFilmographieActeur(listeFilms, "Benedict Cumberbatch");
 	//]
 	
 	//TODO: Détruire et enlever le premier film de la liste (Alien).  Ceci devrait "automatiquement" (par ce que font vos fonctions) détruire les acteurs Tom Skerritt et John Hurt, mais pas Sigourney Weaver puisqu'elle joue aussi dans Avatar.
