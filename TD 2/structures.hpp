@@ -1,3 +1,10 @@
+/**
+* TD 3.
+* \file   structures.hpp
+* \author Irem et Albert
+* \date   5 Mars 2023
+* Créé le 25 Fevrier 2023
+*/
 #pragma once
 // Structures mémoires pour une collection de films.
 
@@ -36,19 +43,41 @@ private:
 	Film** elements = nullptr; // Pointeur vers un tableau de Film*, chaque Film* pointant vers un Film.
 	bool possedeLesFilms_ = false; // Les films seront détruits avec la liste si elle les possède.
 };
+template <typename T>
+class Liste {
+public:
+	Liste() = default;
+	Liste(int cap, int nElem) {
+		capacite_ = cap;
+		nElements_ = nElem;
+		elements_ = make_unique<shared_ptr<T>[]>(capacite_);
+	}
+	Liste(Liste<T>& autre) {
+		capacite_ = autre.capacite_;
+		nElements_ = autre.nElements_;
+		elements_ = make_unique<shared_ptr<T>[]>(capacite_);
+		for (int i = 0; i < autre.nElements_; i++)
+			elements_[i] = autre.elements_[i];
+	}
+	void ajouterElement(shared_ptr<T> element) {
+		elements_[nElements_] = element;
+		nElements_ += 1;
+	}
+	Liste<T>& operator= (Liste<T>&& liste) = default;
 
-struct ListeActeurs {
-	int capacite = 0, nElements = 0;
-	ListeActeurs() = default;
-	ListeActeurs(int cap, int nElem) {
-		capacite = cap;
-		nElements = nElem;
-		elements = make_unique<shared_ptr<Acteur>[]>(capacite);
-	};
+	shared_ptr<T>& operator[] (int i) { 
+		return elements_[i];
+	}
+	span<shared_ptr<T>> enSpan() const {
+		return span(elements_.get(), nElements_);
+	}
 
-	//Acteur** elements; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
-	unique_ptr<shared_ptr<Acteur>[]> elements;
+private:
+	int capacite_ = 0, nElements_ = 0;
+	unique_ptr<shared_ptr<T>[]> elements_;
 };
+
+using ListeActeurs = Liste<Acteur>;
 
 struct Film
 {
@@ -56,15 +85,12 @@ struct Film
 	int anneeSortie = 0, recette = 0; // Année de sortie et recette globale du film en millions de dollars
 	ListeActeurs acteurs;
 	Film() = default;
-	Film(const Film& autre) {
+	Film(Film& autre) {
 		titre = autre.titre;
 		realisateur = autre.realisateur;
 		anneeSortie = autre.anneeSortie;
 		recette = autre.recette;
-		acteurs = ListeActeurs(autre.acteurs.capacite, autre.acteurs.nElements);
-		for (int i = 0; i < autre.acteurs.nElements; i++)
-			acteurs.elements[i] = autre.acteurs.elements[i];
-
+		acteurs = Liste<Acteur>(autre.acteurs);
 	}
 };
 
