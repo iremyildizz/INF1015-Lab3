@@ -295,7 +295,7 @@ void afficherListeFilms(const ListeFilms& listeFilms)
 //	if (acteur == nullptr)
 //		cout << "Aucun acteur de ce nom" << endl;
 //	else
-//		afficherListeFilms(acteur->joueDans);
+//		afficherListeFilms(acteur->joueDans);x
 //}
 
 int main()
@@ -305,7 +305,7 @@ int main()
 	#endif
 	bibliotheque_cours::activerCouleursAnsi();  // Permet sous Windows les "ANSI escape code" pour changer de couleurs https://en.wikipedia.org/wiki/ANSI_escape_code ; les consoles Linux/Mac les supportent normalement par défaut.
 
-	int* fuite = new int; //TODO: Enlever cette ligne après avoir vérifié qu'il y a bien un "Detected memory leak" de "4 bytes" affiché dans la "Sortie", qui réfère à cette ligne du programme.
+	//int* fuite = new int; //TODO: Enlever cette ligne après avoir vérifié qu'il y a bien un "Detected memory leak" de "4 bytes" affiché dans la "Sortie", qui réfère à cette ligne du programme.
 
 	static const string ligneDeSeparation = "\n\033[35m════════════════════════════════════════\033[0m\n";
 
@@ -331,7 +331,7 @@ int main()
 	//[
 	listeFilms.trouverActeur("Benedict Cumberbatch")->anneeNaissance = 1976;
 	//]
-
+	
 	//cout << ligneDeSeparation << "Liste des films où Benedict Cumberbatch joue sont:" << endl;
 	//TODO: Afficher la liste des films où Benedict Cumberbatch joue.  Il devrait y avoir Le Hobbit et Le jeu de l'imitation.
 	//[
@@ -347,6 +347,8 @@ int main()
 	cout << skylien << endl;
 	cout << *listeFilms.enSpan()[0] << endl;
 	cout << *listeFilms.enSpan()[1] << endl;
+
+	cout << *listeFilms.chercherFilmSi([](Film& film) -> bool { return (film.recette == 955); }) << endl;
 
 	detruireFilm(listeFilms.enSpan()[0]);
 	listeFilms.enleverFilm(listeFilms.enSpan()[0]);

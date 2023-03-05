@@ -5,6 +5,7 @@
 #include <cassert>
 #include "gsl/span"
 #include <memory>
+#include <functional>
 using namespace std;
 using gsl::span;
 
@@ -21,6 +22,12 @@ public:
 	shared_ptr<Acteur> trouverActeur(const std::string& nomActeur) const;
 	span<Film*> enSpan() const;
 	int size() const { return nElements; }
+	Film* chercherFilmSi(const function<bool(Film&)>& critere) {
+		for (auto& film : enSpan()) 
+			if (critere(*film))
+				return film;
+		return nullptr;
+	}
 
 private:
 	void changeDimension(int nouvelleCapacite);
