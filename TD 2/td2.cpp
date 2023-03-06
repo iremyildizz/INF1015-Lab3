@@ -301,7 +301,7 @@ int main()
 	cout << ligneDeSeparation << "Le premier film de la liste est:" << endl;
 	//TODO: Afficher le premier film de la liste.  Devrait être Alien.
 	//[
-	cout << *listeFilms.enSpan()[0];
+	cout << listeFilms[0];
 
 	cout << ligneDeSeparation << "Les films sont:" << endl;
 
@@ -309,15 +309,15 @@ int main()
 
 	listeFilms.trouverActeur("Benedict Cumberbatch")->anneeNaissance = 1976;
 	
-	Film skylien = Film(*listeFilms.enSpan()[0]);
+	Film skylien = Film(listeFilms[0]);
 	skylien.titre = "Skylien";
-	skylien.acteurs[0] = listeFilms.enSpan()[1]->acteurs[0];
-	(*skylien.acteurs[0]).nom = "Daniel Wroughton Craig";
+	skylien.acteurs[0] = listeFilms[1].acteurs[0];
+	skylien.acteurs[0]->nom = "Daniel Wroughton Craig";
 	cout << skylien << endl;
-	cout << *listeFilms.enSpan()[0] << endl;
-	cout << *listeFilms.enSpan()[1] << endl;
+	cout << listeFilms[0] << endl;
+	cout << listeFilms[1] << endl;
 
-	cout << *listeFilms.chercherFilmSi([](Film& film) -> bool { return (film.recette == 955); }) << endl;
+	cout << *listeFilms.chercherFilmSi([](const Film& film) -> bool { return (film.recette == 955); }) << endl;
 
 	Liste<string> listeTextes(2, 0);
 	listeTextes.ajouterElement(make_shared<string>("premier string"));
@@ -326,7 +326,7 @@ int main()
 	listeTextes[0] = make_shared<string>("nouveau texte");
 	*listeTextes[1] = "texte modifié";
 
-	cout << *listeTextes[0] << ", " << *listeTextes2[0] << " : " << *listeTextes[1] << ", " << *listeTextes2[1] << endl;
+	cout << *listeTextes[0] << ", " << *listeTextes[1] << " : " << *listeTextes2[0] << ", " << *listeTextes2[1] << endl;
 
 	detruireFilm(listeFilms.enSpan()[0]);
 	listeFilms.enleverFilm(listeFilms.enSpan()[0]);

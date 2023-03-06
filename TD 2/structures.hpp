@@ -29,6 +29,7 @@ public:
 	shared_ptr<Acteur> trouverActeur(const std::string& nomActeur) const;
 	span<Film*> enSpan() const;
 	int size() const { return nElements; }
+	Film& operator[](int index) const { return *elements[index]; }
 	Film* chercherFilmSi(const function<bool(Film&)>& critere) {
 		for (auto& film : enSpan()) 
 			if (critere(*film))
